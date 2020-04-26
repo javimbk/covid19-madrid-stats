@@ -5,10 +5,19 @@ export default function adaptRegionData(data) {
 function transformDataPoint(dataPoint) {
   return {
     date: transformDateString(dataPoint.FECHA),
-    accumulatedPositives: transformNumericValue(dataPoint.CASOS),
+    accumulatedPositives: positivesFromBothTests(dataPoint),
     currentHospitalized: transformNumericValue(dataPoint.Hospitalizados),
     currentICU: transformNumericValue(dataPoint.UCI),
   };
+}
+
+function positivesFromBothTests(dataPoint) {
+  const positiveOldValue = getNumberOrZero(dataPoint.CASOS);
+  const positivePCR = getNumberOrZero(dataPoint['PCR+']);
+  const positiveAC = getNumberOrZero(dataPoint['TestAc+']);
+
+  const total = positiveOldValue + positivePCR + positiveAC;
+  return total === 0 ? null : total.toString();
 }
 
 function transformDateString(dateString) {
@@ -19,4 +28,9 @@ function transformDateString(dateString) {
 
 function transformNumericValue(value) {
   return value === '' ? null : value;
+}
+
+function getNumberOrZero(value) {
+  // eslint-disable-next-line radix
+  return value === '' ? 0 : parseInt(value);
 }
